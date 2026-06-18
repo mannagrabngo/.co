@@ -1,686 +1,589 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manna Grab & Go x MANAZO</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: #f5f0e8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Inter', sans-serif;
-  }
-
-  .poster {
-    width: 800px;
-    height: 1000px;
-    background: linear-gradient(160deg, #faf6ee 0%, #f0e9d8 60%, #e8dfc8 100%);
-    position: relative;
-    overflow: hidden;
-    border-radius: 4px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
-  }
-
-  /* ── ambient blobs ── */
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.18;
-    pointer-events: none;
-  }
-  .blob-green { width: 420px; height: 420px; background: #1a5c38; top: -80px; right: -100px; }
-  .blob-red   { width: 300px; height: 300px; background: #8b1c3a; bottom: 80px; left: -60px; }
-  .blob-gold  { width: 200px; height: 200px; background: #c9a227; bottom: 260px; right: 60px; }
-
-  /* ── MANNA logo top-left ── */
-  .logo-box {
-    position: absolute;
-    top: 36px;
-    left: 44px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 10;
-  }
-  .logo-circle {
-    width: 52px; height: 52px;
-    background: #1a5c38;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(26,92,56,0.35);
-  }
-  .logo-circle svg { width: 30px; height: 30px; }
-  .logo-text { line-height: 1.15; }
-  .logo-text .manna { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #1a5c38; letter-spacing: 0.5px; }
-  .logo-text .sub { font-size: 10px; font-weight: 600; color: #c9a227; letter-spacing: 3px; text-transform: uppercase; }
-  .logo-text .tagline { font-size: 8.5px; color: #7a6e5f; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
-
-  /* ── painting frame ── */
-  .painting-wrap {
-    position: absolute;
-    top: 28px;
-    right: 42px;
-    width: 210px;
-    z-index: 5;
-  }
-  .frame-outer {
-    background: linear-gradient(135deg, #c9a227 0%, #f5d97a 30%, #a07c10 55%, #e8c53a 75%, #8a6608 100%);
-    border-radius: 6px;
-    padding: 10px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.30), inset 0 2px 6px rgba(255,255,255,0.25);
-  }
-  .frame-inner {
-    background: linear-gradient(135deg, #8a6608 0%, #c9a227 40%, #f5d97a 60%, #a07c10 100%);
-    border-radius: 3px;
-    padding: 6px;
-  }
-  .painting-canvas {
-    background: linear-gradient(160deg, #2d1a4a 0%, #1a0f2e 100%);
-    border-radius: 2px;
-    height: 200px;
-    position: relative;
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 16px;
-  }
-
-  /* crown SVG */
-  .crown-svg { width: 40px; margin-bottom: 4px; }
-
-  /* King face (CSS art) */
-  .king-face {
-    width: 60px; height: 68px;
-    background: radial-gradient(ellipse at 40% 35%, #f2c89a, #d4956a);
-    border-radius: 48% 48% 44% 44%;
-    position: relative;
-    margin-bottom: 2px;
-  }
-  .king-face::before { /* beard / collar */
-    content: '';
-    position: absolute;
-    bottom: -22px; left: 50%;
-    transform: translateX(-50%);
-    width: 70px; height: 30px;
-    background: radial-gradient(ellipse, #7a1c2e 0%, #5a1020 100%);
-    border-radius: 0 0 40% 40%;
-  }
-  .king-eyes {
-    position: absolute;
-    top: 26px; left: 50%;
-    transform: translateX(-50%);
-    display: flex; gap: 14px;
-  }
-  .king-eye {
-    width: 8px; height: 5px;
-    background: #1a0f0a;
-    border-radius: 50%;
-  }
-  .king-nose {
-    position: absolute;
-    top: 36px; left: 50%;
-    transform: translateX(-50%);
-    width: 5px; height: 8px;
-    background: #c4845a;
-    border-radius: 50%;
-  }
-  .king-mustache {
-    position: absolute;
-    top: 46px; left: 50%;
-    transform: translateX(-50%);
-    width: 20px; height: 5px;
-    background: #3a1a0a;
-    border-radius: 50% 50% 40% 40%;
-  }
-
-  /* ARM reaching out of the frame */
-  .arm-wrap {
-    position: absolute;
-    bottom: -68px;
-    left: 50%;
-    transform: translateX(-38%);
-    z-index: 20;
-    width: 100px;
-    height: 90px;
-    pointer-events: none;
-  }
-  .arm {
-    width: 30px; height: 70px;
-    background: linear-gradient(180deg, #d4956a 0%, #b87048 100%);
-    border-radius: 14px 14px 4px 4px;
-    position: absolute;
-    bottom: 10px; left: 35px;
-    box-shadow: 2px 4px 12px rgba(0,0,0,0.22);
-  }
-  .arm::before { /* sleeve */
-    content: '';
-    position: absolute;
-    top: -14px; left: -8px;
-    width: 46px; height: 24px;
-    background: #f5f0e2;
-    border-radius: 12px 12px 0 0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
-  }
-  /* hand with sandwich */
-  .hand-sandwich {
-    position: absolute;
-    bottom: 0; left: 22px;
-    width: 56px; height: 44px;
-  }
-  .hand {
-    position: absolute;
-    bottom: 12px; left: 12px;
-    width: 32px; height: 20px;
-    background: #d4956a;
-    border-radius: 8px 8px 4px 4px;
-  }
-  /* sandwich visual */
-  .sandwich {
-    position: absolute;
-    bottom: 28px; left: 6px;
-    width: 44px; height: 26px;
-  }
-  .bread-top {
-    width: 44px; height: 10px;
-    background: linear-gradient(180deg, #c8893a 0%, #a86a1a 100%);
-    border-radius: 10px 10px 2px 2px;
-    position: absolute; top: 0;
-  }
-  .filling {
-    width: 44px; height: 10px;
-    background: linear-gradient(90deg, #e84040 20%, #7cc44a 50%, #e84040 80%);
-    position: absolute; top: 8px;
-  }
-  .bread-bottom {
-    width: 44px; height: 8px;
-    background: linear-gradient(180deg, #a86a1a 0%, #8a5010 100%);
-    border-radius: 2px 2px 6px 6px;
-    position: absolute; top: 16px;
-  }
-
-  /* ── motion swirls ── */
-  .swirl {
-    position: absolute;
-    border: 2px solid rgba(201,162,39,0.55);
-    border-radius: 50%;
-    pointer-events: none;
-    animation: pulse 2.8s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:.25;transform:scale(1.07)} }
-  .swirl-1 { width: 50px; height: 50px; top: 310px; right: 130px; }
-  .swirl-2 { width: 30px; height: 30px; top: 324px; right: 144px; animation-delay:.5s; border-color:rgba(201,162,39,0.3); }
-
-  /* ── headline ── */
-  .headline-area {
-    position: absolute;
-    top: 280px;
-    left: 44px;
-    width: 360px;
-    z-index: 8;
-  }
-  .eyebrow {
-    font-size: 10px;
-    letter-spacing: 3.5px;
-    text-transform: uppercase;
-    color: #c9a227;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  .headline {
-    font-family: 'Playfair Display', serif;
-    font-size: 42px;
-    font-weight: 900;
-    line-height: 1.1;
-    color: #1a1208;
-  }
-  .headline em {
-    font-style: normal;
-    color: #1a5c38;
-  }
-  .sub-headline {
-    margin-top: 14px;
-    font-size: 14px;
-    color: #4a3e2e;
-    line-height: 1.6;
-    max-width: 320px;
-    font-weight: 500;
-  }
-
-  /* ── box + manazo section ── */
-  .products-area {
-    position: absolute;
-    bottom: 110px;
-    left: 44px;
-    right: 44px;
-    display: flex;
-    align-items: flex-end;
-    gap: 28px;
-    z-index: 8;
-  }
-
-  /* meal box illustration */
-  .meal-box-visual {
-    width: 240px;
-    flex-shrink: 0;
-  }
-  .box-outer {
-    background: #1a5c38;
-    border-radius: 10px 10px 6px 6px;
-    padding: 10px 12px 14px;
-    box-shadow: 0 12px 32px rgba(26,92,56,0.30);
-    position: relative;
-  }
-  .box-lid {
-    background: #1a5c38;
-    border-radius: 8px 8px 0 0;
-    padding: 6px 12px;
-    text-align: center;
-    margin-bottom: 4px;
-    border-bottom: 1px solid rgba(255,255,255,0.15);
-  }
-  .box-lid-logo { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; color: #fff; }
-  .box-lid-sub  { font-size: 7.5px; color: #c9a227; letter-spacing: 2.5px; text-transform: uppercase; }
-  .box-inner {
-    background: #fff;
-    border-radius: 6px;
-    padding: 10px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    min-height: 90px;
-  }
-  /* sandwich wedge */
-  .box-sandwich {
-    display: flex; gap: 3px; align-items: flex-end;
-    flex-shrink: 0;
-  }
-  .wedge {
-    width: 26px; height: 44px;
-    border-radius: 3px 3px 0 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .wedge::before { content:''; position:absolute; top:0; left:0; right:0; height:8px; background:#c8893a; border-radius:3px 3px 0 0; }
-  .wedge::after  { content:''; position:absolute; bottom:0; left:0; right:0; height:7px; background:#a86a1a; }
-  .wedge .fill { position:absolute; top:8px; bottom:7px; left:0; right:0; }
-  .w1 .fill { background: linear-gradient(180deg,#e84040 33%,#7cc44a 33% 66%,#e84040 66%); }
-  .w2 .fill { background: linear-gradient(180deg,#7cc44a 40%,#e84040 40%); }
-
-  /* fries */
-  .box-fries {
-    display: flex; gap: 2px; align-items: flex-end;
-    flex: 1;
-  }
-  .fry {
-    flex: 1;
-    background: linear-gradient(180deg, #f5c842 0%, #d4a020 100%);
-    border-radius: 2px;
-  }
-
-  /* manazo bottle */
-  .manazo-bottle-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-  }
-  .bottle {
-    width: 64px;
-    position: relative;
-  }
-  .bottle-cap {
-    width: 26px; height: 12px;
-    background: #111;
-    border-radius: 4px 4px 2px 2px;
-    margin: 0 auto 0;
-  }
-  .bottle-neck {
-    width: 22px; height: 20px;
-    background: linear-gradient(90deg,rgba(139,28,58,0.9),rgba(100,14,40,0.85));
-    margin: 0 auto;
-    border-radius: 2px;
-  }
-  .bottle-body {
-    width: 64px; height: 120px;
-    background: linear-gradient(135deg, rgba(139,28,58,0.95) 0%, rgba(80,10,28,0.98) 60%, rgba(139,28,58,0.7) 100%);
-    border-radius: 8px 8px 10px 10px;
-    box-shadow: 4px 8px 24px rgba(139,28,58,0.40), inset 2px 0 8px rgba(255,255,255,0.08);
-    position: relative;
-    overflow: hidden;
-  }
-  .bottle-body::before {
-    content:'';
-    position:absolute; top:12px; left:8px; right:8px; bottom:12px;
-    background: #f9f6f0;
-    border-radius: 50%;
-    opacity: 0.92;
-  }
-  .bottle-label-text {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    text-align: center;
-    z-index: 2;
-  }
-  .bottle-m  { font-family:'Playfair Display',serif; font-size:9px; font-weight:700; color:#1a5c38; display:block; }
-  .bottle-name { font-family:'Playfair Display',serif; font-size:11px; font-weight:900; color:#8b1c3a; letter-spacing:0.5px; display:block; line-height:1; }
-  .bottle-tag { font-size:5.5px; color:#4a3e2e; letter-spacing:1px; text-transform:uppercase; display:block; margin-top:2px; }
-
-  /* health benefits */
-  .benefits-wrap {
-    position: absolute;
-    bottom: 108px;
-    right: 44px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 8;
-    width: 190px;
-  }
-  .benefit-pill {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.72);
-    backdrop-filter: blur(6px);
-    border-radius: 40px;
-    padding: 8px 14px 8px 10px;
-    border: 1px solid rgba(26,92,56,0.12);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-  .benefit-icon {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    background: #1a5c38;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 14px;
-  }
-  .benefit-text strong { display: block; font-size: 10px; font-weight: 700; color: #1a1208; }
-  .benefit-text span   { font-size: 8.5px; color: #7a6e5f; line-height: 1.3; }
-
-  /* ── divider stripe ── */
-  .stripe {
-    position: absolute;
-    bottom: 90px;
-    left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(26,92,56,0.2) 20%, rgba(201,162,39,0.4) 50%, rgba(26,92,56,0.2) 80%, transparent);
-  }
-
-  /* ── footer bar ── */
-  .footer {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 86px;
-    background: #1a5c38;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 44px;
-  }
-  .footer-left {
-    font-family: 'Playfair Display', serif;
-    font-size: 13px;
-    color: #fff;
-    font-weight: 700;
-    line-height: 1.4;
-  }
-  .footer-left span {
-    display: block;
-    font-family: 'Inter', sans-serif;
-    font-size: 9px;
-    color: #c9a227;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-top: 2px;
-  }
-  .footer-pills {
-    display: flex;
-    gap: 12px;
-  }
-  .fp {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 4px;
-  }
-  .fp-icon {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-  }
-  .fp-label { font-size: 7px; color: rgba(255,255,255,0.7); letter-spacing: 0.5px; text-align: center; text-transform: uppercase; }
-
-  .footer-order {
-    text-align: right;
-  }
-  .order-badge {
-    background: #c9a227;
-    color: #1a1208;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 7px 16px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
-  .order-sub { font-size: 8px; color: rgba(255,255,255,0.55); margin-top: 5px; letter-spacing: 0.5px; }
-
-  /* ── decorative crown doodle ── */
-  .doodle-crown {
-    position: absolute;
-    top: 258px;
-    right: 68px;
-    opacity: 0.22;
-    z-index: 3;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANNA GRAB & GO — Fresh. Fast. Nourishing.</title>
+    <style>
+        body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 500px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 24px; }
+        h1 { text-align: center; }
+        #chat { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 12px; margin-bottom: 16px; background: #fafafa; border-radius: 4px; }
+        .user { color: #0078d7; }
+        .ai { color: #333; }
+        #orderForm { display: flex; }
+        #orderInput { flex: 1; padding: 8px; border-radius: 4px 0 0 4px; border: 1px solid #ccc; }
+        #sendBtn, #voiceBtn, #orderBtn, #preOrderBtn, #reserveBtn, #menuBtn, #makePaymentBtn, #drinksBtn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            min-width: 100px;
+            margin-bottom: 6px;
+            background: #2e7d32;
+            color: #fff;
+        }
+        #sendBtn:hover, #voiceBtn:hover, #orderBtn:hover, #preOrderBtn:hover, #reserveBtn:hover, #menuBtn:hover, #makePaymentBtn:hover, #drinksBtn:hover {
+            background: #1b5e20;
+            color: #fff;
+            box-shadow: 0 2px 8px #bbb;
+        }
+        /* Audio enable banner */
+        #audioBanner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #2e7d32;
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            z-index: 10000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: none; /* Hidden by default, shown via JS */
+        }
+        #audioBanner button {
+            margin-left: 12px;
+            padding: 6px 12px;
+            background: #fff;
+            color: #2e7d32;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #audioBanner button:hover {
+            background: #f0f0f0;
+        }
+        @media (max-width: 600px) {
+            .container { max-width: 98vw; padding: 8px; }
+            #orderForm { flex-direction: column; }
+            #orderInput, #sendBtn, #voiceBtn {
+                width: 100%;
+                border-radius: 4px;
+                margin-bottom: 6px;
+            }
+            #preOrderBtn, #reserveBtn, #menuBtn, #makePaymentBtn {
+                min-width: 80px;
+                font-size: 0.95rem;
+                padding: 8px 0;
+            }
+            #audioBanner {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="poster">
-
-  <!-- ambient blobs -->
-  <div class="blob blob-green"></div>
-  <div class="blob blob-red"></div>
-  <div class="blob blob-gold"></div>
-
-  <!-- MANNA LOGO top-left -->
-  <div class="logo-box">
-    <div class="logo-circle">
-      <!-- M letter logo -->
-      <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <text x="3" y="24" font-family="serif" font-size="22" font-weight="900" fill="white">m</text>
-        <!-- small leaf accent -->
-        <circle cx="24" cy="6" r="4" fill="#c9a227" opacity="0.9"/>
-        <ellipse cx="24" cy="6" rx="2.5" ry="4" fill="#7cc44a" transform="rotate(-30 24 6)"/>
-      </svg>
+    <!-- Audio enable banner -->
+    <div id="audioBanner">
+        <span>Enable audio to hear voice prompts and responses</span>
+        <button id="enableAudioBannerBtn">Enable Audio</button>
     </div>
-    <div class="logo-text">
-      <div class="manna">Manna</div>
-      <div class="sub">Grab &amp; Go</div>
-      <div class="tagline">Herb · Heal · Nourish</div>
-    </div>
-  </div>
-
-  <!-- PAINTING FRAME (top right) -->
-  <div class="painting-wrap">
-    <div class="frame-outer">
-      <div class="frame-inner">
-        <div class="painting-canvas">
-          <!-- Crown -->
-          <svg class="crown-svg" viewBox="0 0 60 30" fill="none">
-            <polygon points="0,28 10,8 20,20 30,2 40,20 50,8 60,28" fill="#c9a227"/>
-            <rect x="0" y="26" width="60" height="4" rx="2" fill="#a07c10"/>
-            <circle cx="30" cy="5" r="3.5" fill="#fff" opacity=".8"/>
-            <circle cx="10" cy="10" r="2.5" fill="#fff" opacity=".6"/>
-            <circle cx="50" cy="10" r="2.5" fill="#fff" opacity=".6"/>
-          </svg>
-
-          <!-- King face -->
-          <div class="king-face">
-            <div class="king-eyes"><div class="king-eye"></div><div class="king-eye"></div></div>
-            <div class="king-nose"></div>
-            <div class="king-mustache"></div>
-          </div>
-
-          <!-- ARM reaching out -->
-          <div class="arm-wrap">
-            <div class="arm"></div>
-            <div class="hand-sandwich">
-              <div class="hand"></div>
-              <div class="sandwich">
-                <div class="bread-top"></div>
-                <div class="filling"></div>
-                <div class="bread-bottom"></div>
-              </div>
-            </div>
-          </div>
+    <div class="container">
+    <img id="randomImage" src="" alt="Header Image" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:16px; margin-top:0; display:block;" />
+    <h1 style="font-size:2.5em;">MANNA GRAB & GO</h1>
+    <div style="text-align:center;font-size:1.1em;color:#888;margin-bottom:12px;">Fresh. Fast. Nourishing.</div>
+        
+        <!-- Add action buttons here -->
+        <div id="actionBar" style="display:flex;justify-content:space-between;margin-bottom:12px;gap:6px;">
+            <button id="preOrderBtn" class="action-button">Pre Order</button>
+            <button id="menuBtn" class="action-button">Menu</button>
+            <button id="drinksBtn" class="action-button">Drinks</button>
+            <button id="makePaymentBtn" class="action-button" style="background:#ff9800;">Make Payment</button>
         </div>
-      </div>
+        
+        <div id="chat"></div>
+        <form id="orderForm">
+            <input type="text" id="orderInput" placeholder="Type your order or question..." autocomplete="off" required />
+            <button type="submit" id="sendBtn">Send</button>
+            <button type="button" id="voiceBtn" style="margin-left:8px;">🎤</button>
+        </form>
     </div>
-  </div>
+    <footer style="text-align:center; margin-top:24px; color:#888; font-size:14px;">
+        Powered by I.TEE CONCEPT GLOBAL(I.TEC)
+    </footer>
+    <!-- Blockchain support removed: ethers.js CDN removed -->
+    <script>
+        const chat = document.getElementById('chat');
+        const orderForm = document.getElementById('orderForm');
+        const orderInput = document.getElementById('orderInput');
+        const randomImage = document.getElementById('randomImage');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const preOrderBtn = document.getElementById('preOrderBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const makePaymentBtn = document.getElementById('makePaymentBtn');
 
-  <!-- motion swirls near arm -->
-  <div class="swirl swirl-1"></div>
-  <div class="swirl swirl-2"></div>
+        // Session state for tracking urgent events and other session-level flags
+        const sessionState = { lastUrgent: null };
 
-  <!-- doodle crown watermark -->
-  <div class="doodle-crown">
-    <svg width="60" height="32" viewBox="0 0 60 30" fill="none">
-      <polygon points="0,28 10,8 20,20 30,2 40,20 50,8 60,28" stroke="#1a5c38" stroke-width="2" fill="none"/>
-    </svg>
-  </div>
+        // Random image logic
+        const images = [
+            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
+            'https://i.ibb.co/chQV4r6K/file-00000000ad0071fb9bd214f95362865c.png',
+            'https://i.ibb.co/YBVdn7j4/file-00000000128c71f49463babbc83cc5e4.png',
+            'https://i.ibb.co/S4pNHcCH/file-00000000982c7243b465271f570c8133.png',
+            'https://i.ibb.co/TBs5syMf/file-000000003f187246a8481a40b4aa6d99.png',
+            'https://i.ibb.co/S7GtNMJs/file-00000000f3d872439928fd96d2dc16c6.png',
+            'https://i.ibb.co/S7yC8RRh/file-00000000279471f481846613e3f667ea.png',
+            'https://i.ibb.co/4nbrZTSz/file-000000004a087246a8a9e82b2c025e7a.png',
+            'https://i.ibb.co/bj0SN4DY/file-00000000ea6471f49e9d85936dceaa20.png'
+        ];
+        function setRandomImage() {
+            const idx = Math.floor(Math.random() * images.length);
+            randomImage.src = images[idx];
+        }
+        setRandomImage();
+        setInterval(setRandomImage, 4000); // Change image every 4 seconds
+        randomImage.onerror = setRandomImage;
 
-  <!-- HEADLINE -->
-  <div class="headline-area">
-    <div class="eyebrow">Even Kings Crave This</div>
-    <div class="headline">
-      Grab a Meal<br><em>Fit for</em><br>Royalty
-    </div>
-    <div class="sub-headline">
-      Fresh club sandwich · crispy fries · chilled MANAZO —<br>
-      the premium herbal drink that refreshes, nourishes &amp; energizes.
-    </div>
-  </div>
+        // Robust voice synthesis helper with enable-audio fallback
+        let audioEnabled = false; // set true after a user gesture
+        let pendingUtteranceText = null;
+        function speak(text, opts = {}) {
+            if (!('speechSynthesis' in window)) return false;
+            // If audio hasn't been enabled by a user gesture yet, store the utterance
+            // and show the enable overlay instead of attempting to speak (many
+            // browsers silently block speak() calls without throwing).
+            if (!audioEnabled) {
+                pendingUtteranceText = text;
+                showEnableAudioOverlay();
+                return false;
+            }
 
-  <!-- PRODUCTS ROW -->
-  <div class="products-area">
-    <!-- meal box -->
-    <div class="meal-box-visual">
-      <div class="box-outer">
-        <div class="box-lid">
-          <div class="box-lid-logo">Manna</div>
-          <div class="box-lid-sub">Grab &amp; Go</div>
-        </div>
-        <div class="box-inner">
-          <div class="box-sandwich">
-            <div class="wedge w1"><div class="fill"></div></div>
-            <div class="wedge w2"><div class="fill"></div></div>
-          </div>
-          <div class="box-fries">
-            <div class="fry" style="height:44px"></div>
-            <div class="fry" style="height:38px"></div>
-            <div class="fry" style="height:50px"></div>
-            <div class="fry" style="height:34px"></div>
-            <div class="fry" style="height:46px"></div>
-            <div class="fry" style="height:40px"></div>
-          </div>
-          <!-- mini bottle in box -->
-          <div style="display:flex;flex-direction:column;align-items:center">
-            <div style="width:12px;height:6px;background:#111;border-radius:2px 2px 1px 1px;margin:0 auto"></div>
-            <div style="width:10px;height:10px;background:rgba(139,28,58,0.9);margin:0 auto;border-radius:1px"></div>
-            <div style="width:28px;height:52px;background:linear-gradient(135deg,rgba(139,28,58,0.95),rgba(80,10,28,0.98));border-radius:4px 4px 5px 5px;position:relative;overflow:hidden;box-shadow:2px 4px 8px rgba(139,28,58,0.3)">
-              <div style="position:absolute;top:6px;left:3px;right:3px;bottom:6px;background:#f9f6f0;border-radius:50%;opacity:.9"></div>
-              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:2">
-                <span style="font-family:'Playfair Display',serif;font-size:5px;font-weight:900;color:#8b1c3a;display:block;line-height:1">MANAZO</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            try {
+                if (opts.cancel !== false) window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = opts.lang || 'en-US';
+                utter.rate = typeof opts.rate === 'number' ? opts.rate : 1.0;
+                utter.pitch = typeof opts.pitch === 'number' ? opts.pitch : 1.0;
+                utter.volume = typeof opts.volume === 'number' ? opts.volume : 1.0;
+                utter.onstart = () => {};
+                utter.onend = () => { pendingUtteranceText = null; };
+                utter.onerror = () => { pendingUtteranceText = null; };
+                window.speechSynthesis.speak(utter);
+                return true;
+            } catch (err) {
+                console.warn('speak error', err);
+                return false;
+            }
+        }
 
-    <!-- MANAZO bottle standalone -->
-    <div class="manazo-bottle-area" style="align-self:flex-end;padding-bottom:4px">
-      <div class="bottle">
-        <div class="bottle-cap"></div>
-        <div class="bottle-neck"></div>
-        <div class="bottle-body">
-          <div class="bottle-label-text">
-            <span class="bottle-m">𝓂</span>
-            <span class="bottle-name">MANAZO</span>
-            <span class="bottle-tag">Premium<br>Herbal</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+        function showEnableAudioOverlay() {
+            if (document.getElementById('enableAudioBtn')) return;
+            const btn = document.createElement('button');
+            btn.id = 'enableAudioBtn';
+            btn.textContent = 'Enable audio — Tap to hear prompts';
+            Object.assign(btn.style, {
+                position: 'fixed', right: '12px', bottom: '12px', zIndex: 9999,
+                padding: '10px 14px', background: '#0078d7', color: '#fff', border: 'none', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            });
+            btn.onclick = function() {
+                audioEnabled = true;
+                const el = document.getElementById('enableAudioBtn');
+                if (el) el.remove();
+                if (pendingUtteranceText) {
+                    try { speak(pendingUtteranceText, { cancel: false }); pendingUtteranceText = null; } catch(e){}
+                }
+            };
+            document.body.appendChild(btn);
+        }
 
-  <!-- HEALTH BENEFIT PILLS -->
-  <div class="benefits-wrap">
-    <div class="benefit-pill">
-      <div class="benefit-icon">🌿</div>
-      <div class="benefit-text">
-        <strong>Rich in Antioxidants</strong>
-        <span>Hibiscus, Moringa &amp; Ginger</span>
-      </div>
-    </div>
-    <div class="benefit-pill">
-      <div class="benefit-icon">⚡</div>
-      <div class="benefit-text">
-        <strong>Energy &amp; Vitality</strong>
-        <span>Kola Nut natural caffeine</span>
-      </div>
-    </div>
-    <div class="benefit-pill">
-      <div class="benefit-icon">✅</div>
-      <div class="benefit-text">
-        <strong>No Artificial Color</strong>
-        <span>100% natural ingredients</span>
-      </div>
-    </div>
-    <div class="benefit-pill">
-      <div class="benefit-icon">🧡</div>
-      <div class="benefit-text">
-        <strong>Immune Support</strong>
-        <span>Vitamin C · Iron · Potassium</span>
-      </div>
-    </div>
-  </div>
+        // Voice recognition
+        let recognizing = false;
+        let recognition;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                orderInput.value = transcript;
+                orderForm.dispatchEvent(new Event('submit'));
+            };
+            recognition.onend = function() { recognizing = false; voiceBtn.textContent = '🎤'; };
+        }
 
-  <!-- divider -->
-  <div class="stripe"></div>
+        voiceBtn.addEventListener('click', function() {
+            if (recognition && !recognizing) {
+                recognition.start();
+                recognizing = true;
+                voiceBtn.textContent = '🛑';
+            } else if (recognition && recognizing) {
+                recognition.stop();
+                recognizing = false;
+                voiceBtn.textContent = '🎤';
+            }
+        });
 
-  <!-- FOOTER -->
-  <div class="footer">
-    <div class="footer-left">
-      The Royal Combo
-      <span>Sandwich + Fries + MANAZO</span>
-    </div>
-    <div class="footer-pills">
-      <div class="fp"><div class="fp-icon">🌿</div><div class="fp-label">Herb</div></div>
-      <div class="fp"><div class="fp-icon">💚</div><div class="fp-label">Heal</div></div>
-      <div class="fp"><div class="fp-icon">✨</div><div class="fp-label">Nourish</div></div>
-    </div>
-    <div class="footer-order">
-      <div class="order-badge">Order Now →</div>
-      <div class="order-sub">Proudly Made in Nigeria 🇳🇬</div>
-    </div>
-  </div>
+        // Only show the order button once per session
+        let orderButtonShown = false;
 
-</div>
+        // ===== TONE & SENSITIVITY =====
+        function analyzeTone(text){
+            const t = String(text || '').toLowerCase();
+            return {
+                urgent: /\b(urgent|emergency|now|immediately|asap|help me)\b/.test(t),
+                distress: /\b(allerg|allergic|choke|breath|pain|injur|collapsed|collapse)\b/.test(t),
+                anger: /\b(angry|annoyed|mad|frustrat|what the|this is bad)\b/.test(t),
+                polite: /\b(please|thank you|thanks|kindly)\b/.test(t),
+                profanity: /\b(fuck|shit|damn|bastard|idiot)\b/.test(t)
+            };
+        }
+
+        function handleUrgentMessage(userMessage, tone){
+            // Food-service specific urgent flow
+            const notice = (tone.distress || tone.urgent) ?
+                '<div style="background:#fff3cd;padding:10px;border-left:4px solid #ffc107;border-radius:6px;margin:8px 0;"><strong>Immediate assistance:</strong> If this is a medical emergency (allergic reaction), please let us know. Would you like me to notify support or prepare an urgent note for the kitchen?<div style="margin-top:8px;"><button onclick="notifySupport()" style="margin-right:8px;padding:8px 10px;border-radius:6px;background:#dc3545;color:#fff;border:none;">Notify support</button><button onclick="callEmergency()" style="padding:8px 10px;border-radius:6px;background:#ffc107;color:#000;border:none;">Call emergency</button></div></div>' : '';
+            appendMessage('ai', notice + "I'm here to help — please tell me briefly what happened so I can assist.");
+            // record for session (could be extended to alert staff)
+            sessionState.lastUrgent = { message: userMessage, detected: tone };
+        }
+
+        function notifySupport(){
+            appendMessage('ai', 'Okay — support has been notified and a priority note has been prepared. If you want follow-up, please call this phone number 08132115139 or email mannagrabngo@gmail.com and we will confirm.');
+            if (!sessionState.lastUrgent) sessionState.lastUrgent = {};
+            sessionState.lastUrgent.notified = true;
+        }
+
+        function callEmergency(){
+            appendMessage('ai', 'If this is an immediate emergency, please call your local emergency services now (e.g., 911 or 112) and get to a safe place.');
+        }
+
+        // Helper to append account/payment details and attach a Pay Now button
+        function showAccountDetails(prefix = ''){
+            const accountDetails = 'BANK NAME: OPAY, ACCOUNT NUMBER: 08132115139, ACCOUNT NAME: Taiwo iwaloga.';
+            appendMessage('ai', (prefix ? prefix + '<br>' : '') + 'Here are the account details for payment: <strong>' + accountDetails + '</strong><br><button id="payNowBtn" style="margin-top:10px;padding:8px 12px;background:#ff9800;color:#fff;border:none;border-radius:6px;">Pay Now</button>');
+            // Attach handler shortly after DOM insertion
+            setTimeout(()=>{
+                const p = document.getElementById('payNowBtn');
+                if(!p) return;
+                p.onclick = async function(){
+                    try{
+                        await processPaymentOnBlockchain();
+                        appendMessage('ai', 'Payment intent recorded. If you completed the payment via your bank transfer or gateway, please save the receipt for confirmation.');
+                    }catch(err){
+                        console.error('Payment initiation failed:', err);
+                        appendMessage('ai', 'There was an issue initiating the payment. Please try again or use the account details provided.');
+                    }
+                };
+            }, 120);
+        }
+
+        function paymentReminderText(){
+            return ' Please remember to come back here to make payment so we can serve you faster.';
+        }
+
+        function aiResponse(message) {
+            const lowerMsg = message.toLowerCase();
+            const tone = analyzeTone(message);
+
+            // If urgent or distress detected, use immediate path
+            if (tone.urgent || tone.distress) {
+                handleUrgentMessage(message, tone);
+                // ai response already appended by handler; return empty so we don't duplicate
+                return '';
+            }
+
+            let response = "";
+            // reuse helper reminder text for consistency
+            const paymentReminder = paymentReminderText();
+
+            if (lowerMsg.includes('menu')) {
+                response = "Absolutely! Here's our menu: Jollof rice, Fried rice, Amala, Special eba, Pasta, Salad, Soup and many more. May I recommend you check the specials first? If you have any preferences or dietary needs, just let me know—I'm here to make your dining experience wonderful.";
+                response += "<br><br><strong>Our wholesome ingredients & benefits:</strong> We use cucumber, lemon, lettuce, fennel, mint, rosemary, moringa, cabbage, and carrot in sandwiches, drinks, and salads. These ingredients help support hydration, digestion, immune health, heart health, weight management, energy and overall wellness.";
+
+            } else if (lowerMsg.includes('pasta')) {
+                response = "Our pasta is cooked to perfection and served with a variety of delicious sauces. The pasta is a creamy Alfredo—would you like to give it a try?";
+            } else if (lowerMsg.includes('salad')) {
+                response = "Our salads are crisp, fresh, and full of flavor. The delightful mix of greens, nuts, and a house-made dressing. Would you like to try it?";
+            } else if (lowerMsg.includes('order') || lowerMsg.includes('pre order')) {
+                logOrderToBlockchain(message);
+                response = "Please place your order first using the 'Place Order' button below. Once your order is placed, you can make payment using the account details provided. If you need any assistance, I'm here to help!";
+            } else if (lowerMsg.includes('thank')) {
+                response = "You're most welcome! It's my pleasure to assist you. If you need anything else, just let me know. Enjoy your dining experience!";
+            } else {
+                response = "Welcome! I'm your friendly AI, here to make your dining experience delightful. If you have any questions about the menu or need recommendations, just ask.<br>All restaurant you prefer in one place. Thank you for doing business with us today.";
+            }
+
+            // Adjust tone based replies
+            if (tone.anger || tone.profanity) {
+                response = "I'm sorry you're feeling that way. " + response;
+            } else if (tone.polite) {
+                response = "Thanks for being polite! " + response;
+            }
+
+            response += paymentReminder;
+            response += '<br><button id="orderBtn" style="margin-top:10px;padding:8px 16px;background:#0078d7;color:#fff;border:none;border-radius:4px;cursor:pointer;">Place Order</button>';
+            return response;
+        }
+
+        // Intercept chat to handle order button click
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = sender;
+            if (sender === 'ai') {
+                div.innerHTML = text;
+            } else {
+                div.textContent = (sender === 'user' ? 'You: ' : '') + text;
+            }
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            if (sender === 'ai') {
+                try{ speak(div.textContent.replace(/<[^>]+>/g, '')); }catch(e){}
+                // Add event listener for order button
+                setTimeout(() => {
+                            const btn = div.querySelector('#orderBtn');
+                            if (btn) {
+                                btn.onclick = function() {
+                                    window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank');
+                                };
+                            }
+                }, 100);
+            }
+        }
+
+        async function logOrderToBlockchain(order) {
+            // Blockchain integration removed — record order locally (demo)
+            try {
+                console.log('Order recorded (local demo):', order);
+                appendMessage('ai', 'Order recorded (demo). Please use the payment details or the Pay Now button to complete your payment.');
+                return Promise.resolve({ status: 'recorded', order: order });
+            } catch (err) {
+                console.error('Order logging error (local):', err);
+                return Promise.reject(err);
+            }
+        }
+
+        async function processPaymentOnBlockchain() {
+            // Blockchain payment removed. Use account details or Pay Now flow that does not depend on blockchain wallets.
+            appendMessage('ai', 'If you completed the payment via your bank transfer or payment gateway, please save the receipt for confirmation.');
+            return Promise.resolve({ status: 'no-op' });
+        }
+
+        orderForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const userMsg = (orderInput.value || '').trim();
+            if(!userMsg) return;
+            appendMessage('user', userMsg);
+
+            // If user typed a known food category, emulate the button click flow
+            const matchedFood = matchFoodType(userMsg);
+            if(matchedFood){
+                selectedFoodType = matchedFood;
+                const aiText = `Great choice! You selected <strong>${selectedFoodType}</strong>.<br>Before I recommend the best meals, do you have any health condition I should consider?`;
+                appendMessage('ai', aiText + '<div style="margin-top:10px;">' + renderButtons(healthOptions, 'health') + '</div>');
+                speak(`Great choice! ${selectedFoodType}. Before I recommend the best meals, do you have any health condition I should consider?`);
+                orderInput.value = '';
+                return;
+            }
+
+            const aiMsg = aiResponse(userMsg);
+            if (aiMsg) setTimeout(() => appendMessage('ai', aiMsg), 500);
+            orderInput.value = '';
+        });
+
+        // Polite, interesting, and food-craving welcome greetings
+        const welcomeGreetings = [
+            `Welcome to Manna Grab & Go! 🌿<br>Hello and thank you for choosing Manna Grab & Go — where healthy meets convenient!<br>We're delighted to serve you fresh sandwiches, nourishing drinks, and wholesome snacks made with carefully selected vegetables, herbs, and natural spices. Every item is prepared to help you enjoy great taste while supporting your wellness goals.<br><strong>Why customers keep coming back:</strong><br>🥪 Freshly made and ready to grab ⚡ Fast service for busy lifestyles 🌿 Packed with natural ingredients 💚 Supports healthy living and daily wellness 💰 Affordable goodness you can enjoy every day<br>Whether you're heading to work, school, a meeting, or simply need a quick healthy meal, we've got something delicious waiting for you.<br><em>Remember: Healthy eating doesn't have to be difficult. Just grab, go, and enjoy!</em><br>🌟 Manna Grab & Go "Grab Goodness. Go Further."`,
+            `👋 Welcome to Manna Grab & Go!<br>I'm your wellness assistant, here to help you discover fresh sandwiches, healthy drinks, and nourishing snacks that fit your lifestyle.<br>Looking for more energy? Better digestion? A quick healthy meal? We've got you covered.<br>🥪 Fresh 🌿 Nutritious ⚡ Convenient 💚 Made for your well-being<br>What would you like to enjoy today?`,
+            `MANNA GRAB & GO<br>"Food that works for you."<br>Our meals are designed not only to satisfy hunger but also to support a healthier lifestyle through carefully selected vegetables, herbs, and spices known for their wellness benefits.<br><strong>Eat Smart. Live Well.</strong>`
+        ];
+        // --- Interactive Food + Health flow ---
+        const foodTypes = [
+            'Manna Chicken Supreme',
+            'Garden Vitality Sandwich',
+            'Sunrise Egg Delight',
+            'Golden Crunch Sweet Potato fries',
+            'Manna Power Pocket (Bread + Akara)',
+            'Heritage Breakfast Combo (Akara + Pap)',
+            'Champion\'s Breakfast pack (Akara + Oatmeal)'
+        ];
+        // Removed 'Food allergies' option per request
+        const healthOptions = ['Ulcer', 'High blood pressure', 'Diabetes', 'Weight loss goals', 'None'];
+
+        const recommendations = {
+            'Ulcer': `Thanks for sharing. For ulcer patients, it’s safer to take light, non-spicy, and low-oil meals.<br><strong>Recommended for you:</strong><ul><li>White rice + plantain + grilled chicken</li><li>Boiled yam + egg sauce (mild pepper)</li><li>Plain spaghetti + fish</li><li>Oats + milk</li></ul>Avoid: very peppery meals, fried foods, alcohol, raw garri.`,
+            'High blood pressure': `Got it. For high blood pressure, we avoid salty and oily meals.<br><strong>Recommended for you:</strong><ul><li>Jollof/white rice + grilled turkey</li><li>Boiled plantain + vegetables & fish</li><li>Beans + sweet potatoes</li><li>Moi moi + fish</li></ul>Avoid: red meat, fried foods, very salty foods.`,
+            'Diabetes': `Understood. For diabetes, low-sugar and low-starch meals are safer.<br><strong>Recommended for you:</strong><ul><li>Grilled fish + vegetables</li><li>Beans + boiled plantain (small portion)</li><li>Moi moi + egg</li><li>Brown rice (if available)</li></ul>Avoid: soft drinks, snacks, white bread, large rice portions.`,
+            'Weight loss goals': `Nice! Here are weight-friendly meals for you:<br><strong>Recommended:</strong><ul><li>Grilled chicken/fish + vegetables</li><li>Beans + plantain (small portion)</li><li>Oatmeal</li><li>Smoothies without sugar</li></ul>Avoid: fries, pastries, heavy swallow.`,
+            'None': `Perfect! Here are today’s top meals:<ul><li>Jollof Rice + Turkey</li><li>Spaghetti Stir-Fry + Chicken</li><li>Fried Rice + Beef</li><li>Beans + Plantain</li><li>Shawarma</li></ul>Which one would you like to order?`
+        };
+
+        let selectedFoodType = null;
+
+        // Helper to map typed input to a foodType (so typing behaves like clicking the food button)
+        function matchFoodType(text){
+            if(!text) return null;
+            const t = String(text).toLowerCase().trim();
+            for(const f of foodTypes){
+                const fNorm = f.toLowerCase().trim();
+                if(t === fNorm || t.includes(fNorm) || fNorm.includes(t)) return f;
+            }
+            return null;
+        }
+
+        function renderButtons(list, dataAttr) {
+            return list.map(item => `<button data-${dataAttr}="${item}" style="margin:6px;padding:8px 12px;border-radius:6px;background:#eee;border:1px solid #ccc;cursor:pointer;">${item}</button>`).join('');
+        }
+
+        function renderWelcomePrompt() {
+            if (window._welcomeRendered) return;
+            window._welcomeRendered = true;
+            const welcome = welcomeGreetings[Math.floor(Math.random() * welcomeGreetings.length)];
+            // Try to speak welcome
+            try{ speak(welcome); }catch(e){}
+            // Append prompt with food type options
+            const html = `<div style="margin-bottom:8px;">${welcome}<br><div style="margin-top:10px;">${renderButtons(foodTypes, 'food')}</div></div>`;
+            appendMessage('ai', html);
+        }
+
+        // Delegated click handler inside chat for our generated buttons
+        chat.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            // Food type buttons
+            if (btn.dataset.food) {
+                selectedFoodType = btn.dataset.food;
+                appendMessage('user', selectedFoodType);
+                const aiText = `Great choice! You selected <strong>${selectedFoodType}</strong>.<br>Before I recommend the best meals, do you have any health condition I should consider?`;
+                appendMessage('ai', aiText + '<div style="margin-top:10px;">' + renderButtons(healthOptions, 'health') + '</div>');
+                speak(`Great choice! ${selectedFoodType}. Before I recommend the best meals, do you have any health condition I should consider?`);
+                return;
+            }
+            // Health option buttons
+            if (btn.dataset.health) {
+                const condition = btn.dataset.health;
+                appendMessage('user', condition);
+                const rec = recommendations[condition] || 'Thanks. Here are some options.';
+                // Render recommendation and single Order Now CTA
+                let recHtml = `<div>${rec}</div>`;
+                recHtml += '<div style="margin-top:10px;"><button data-action="order-now" style="margin-right:8px;background:#28a745;color:#fff;padding:10px 14px;border:none;border-radius:8px;font-weight:600;">Order Now</button></div>';
+                appendMessage('ai', recHtml);
+                speak(rec.replace(/<[^>]+>/g, ''));
+                return;
+            }
+            // CTA buttons (checkout/add-more/similar)
+            if (btn.dataset.action) {
+                const action = btn.dataset.action;
+                if (action === 'order-now') {
+                    appendMessage('user', 'Order Now');
+                    // Open the ordering link for the user to place the order externally
+                    window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank');
+                    // Log the intent and show payment instructions (user completes payment separately)
+                    logOrderToBlockchain('Order placed via Order Now button');
+                    showAccountDetails('Thanks! Your order link has been opened. ' + paymentReminderText());
+                    speak('Thanks! I opened the order page. Please place the order there and remember to come back here to make payment.');
+                }
+            }
+        });
+
+        // Start the interactive prompt on load and attempt robust speech on load/refresh
+        let _welcomeSpoken = false;
+        function attemptSpeakWelcome(){
+            if(_welcomeSpoken) return;
+            _welcomeSpoken = true;
+            try{ if(window.speechSynthesis && window.speechSynthesis.getVoices) window.speechSynthesis.getVoices(); }catch(e){}
+            renderWelcomePrompt();
+        }
+
+        // Show audio enable banner on load
+        function showAudioBanner() {
+            const banner = document.getElementById('audioBanner');
+            if (banner) banner.style.display = 'block';
+        }
+
+        // Hide audio banner and enable audio
+        function enableAudio() {
+            audioEnabled = true;
+            const banner = document.getElementById('audioBanner');
+            if (banner) banner.style.display = 'none';
+            // If there's a pending utterance (browser blocked before user gesture), speak it now
+            if (pendingUtteranceText) {
+                try { speak(pendingUtteranceText, { cancel: false }); } catch (e) {}
+                pendingUtteranceText = null;
+            }
+            attemptSpeakWelcome();
+        }
+
+        window.addEventListener('load', function() { showAudioBanner(); renderWelcomePrompt(); });
+        window.addEventListener('pageshow', function(e){ if(e.persisted && !audioEnabled) showAudioBanner(); });
+        document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible' && !audioEnabled) showAudioBanner(); });
+        window.addEventListener('focus', function(){ if(!audioEnabled) showAudioBanner(); });
+
+        document.getElementById('enableAudioBannerBtn').addEventListener('click', enableAudio);
+
+        const foodColors = [
+            '#FFEBEE', '#FFF8E1', '#E8F5E9', '#E3F2FD', '#F3E5F5', '#FFF3E0', '#FBE9E7', '#F9FBE7', '#F0F4C3', '#F1F8E9'
+        ];
+        function setRandomFoodColor() {
+            document.body.style.background = foodColors[Math.floor(Math.random() * foodColors.length)];
+        }
+        setRandomFoodColor();
+        setInterval(setRandomFoodColor, 4000); // Change color every 4 seconds
+
+        // Add these buttons above the chat
+        function renderActionBar() {
+            let actionBar = document.getElementById('actionBar');
+            if (!actionBar) {
+                actionBar = document.createElement('div');
+                actionBar.id = 'actionBar';
+                actionBar.style.display = 'flex';
+                actionBar.style.justifyContent = 'space-between';
+                actionBar.style.marginBottom = '12px';
+                document.querySelector('.container').insertBefore(actionBar, document.getElementById('chat'));
+            }
+            actionBar.innerHTML = `
+                <button id="preOrderBtn" style="flex:1;margin-right:6px;">Pre Order</button>
+                <button id="reserveBtn" style="flex:1;margin-right:6px;">Table Reservation</button>
+                <button id="menuBtn" style="flex:1;margin-right:6px;">Menu</button>
+                <button id="makePaymentBtn" style="flex:1;">Make Payment</button>
+            `;
+        }
+        renderActionBar();
+
+        // Button event listeners
+        function showManazoInfo(){
+            const manazo = `<div style="max-width:420px;"><h3>MANAZO DRINK</h3><p>Refresh your body naturally with <strong>MANAZO</strong>, a delicious wellness drink infused with carefully selected fruits, herbs, and spices known for their nourishing properties.</p><p>Every bottle is crafted to help you stay refreshed, energized, and revitalized throughout your day.</p><ul><li>✔️ Refreshing Taste</li><li>✔️ Naturally Inspired Ingredients</li><li>✔️ Supports Hydration</li><li>✔️ Rich in Plant-Based Goodness</li><li>✔️ Perfect for Home, Work, School & Travel</li></ul><p><em>Refresh Naturally. Thrive Daily.</em></p><div style="margin-top:8px;"><button data-action="order-now" style="background:#2e7d32;color:#fff;padding:8px 12px;border:none;border-radius:6px;">Order MANAZO</button></div></div>`;
+            appendMessage('ai', manazo);
+        }
+
+        function setActionBarListeners() {
+            const pre = document.getElementById('preOrderBtn'); if(pre) pre.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
+            const res = document.getElementById('reserveBtn'); if(res) res.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
+            const menu = document.getElementById('menuBtn'); if(menu) menu.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
+            const drinks = document.getElementById('drinksBtn'); if(drinks) drinks.onclick = function() { showManazoInfo(); };
+            const pay = document.getElementById('makePaymentBtn'); if(pay) pay.onclick = function() { showAccountDetails(paymentReminderText()); };
+        }
+        setActionBarListeners();
+        // Always re-apply listeners after each AI response (in case action bar is re-rendered)
+        const oldAppendMessage = appendMessage;
+        appendMessage = function(sender, text) {
+            oldAppendMessage(sender, text);
+            setActionBarListeners();
+        }
+
+        // Add WhatsApp chat button
+        (function addWhatsAppButton(){
+            const wa = document.createElement('button');
+            wa.id = 'waBtn';
+            wa.title = 'Chat with us on WhatsApp';
+            wa.innerHTML = '💬 WhatsApp';
+            Object.assign(wa.style, {
+                position: 'fixed', right: '12px', bottom: '80px', zIndex: 10001,
+                background: '#25D366', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer', fontWeight: '600'
+            });
+            wa.onclick = function(){ window.open('https://api.whatsapp.com/send?phone=2348083505863&text=Hello%20Manna%20Grab%20%26%20Go', '_blank'); };
+            document.body.appendChild(wa);
+        })();
+    </script>
 </body>
 </html>
