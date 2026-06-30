@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -298,7 +298,19 @@
             const paymentReminder = paymentReminderText();
 
             if (lowerMsg.includes('menu')) {
-                response = "Absolutely! Here's our menu: Jollof rice, Fried rice, Amala, Special eba, Pasta, Salad, Soup and many more. May I recommend you check the specials first? If you have any preferences or dietary needs, just let me know—I'm here to make your dining experience wonderful.";
+                // Build the menu from the canonical foodTypes list (fallback to a short message)
+                let menuHtml = "Absolutely! Here's our menu:<br><ul>";
+                try {
+                    if (typeof foodTypes !== 'undefined' && Array.isArray(foodTypes)) {
+                        menuHtml += foodTypes.map(f => `<li>${f}</li>`).join('');
+                    } else {
+                        menuHtml += '<li>Manna Chicken Supreme</li><li>Garden Vitality Sandwich</li><li>Sunrise Egg Delight</li>';
+                    }
+                } catch (e) {
+                    menuHtml += '<li>Manna Chicken Supreme</li><li>Garden Vitality Sandwich</li><li>Sunrise Egg Delight</li>';
+                }
+                menuHtml += "</ul>May I recommend you check the specials first? If you have any preferences or dietary needs, just let me know—I'm here to make your dining experience wonderful.";
+                response = menuHtml;
                 response += "<br><br><strong>Our wholesome ingredients & benefits:</strong> We use cucumber, lemon, lettuce, fennel, mint, rosemary, moringa, cabbage, and carrot in sandwiches, drinks, and salads. These ingredients help support hydration, digestion, immune health, heart health, weight management, energy and overall wellness.";
 
             } else if (lowerMsg.includes('pasta')) {
@@ -328,6 +340,8 @@
 
         // Intercept chat to handle order button click
         function appendMessage(sender, text) {
+            // Guard against undefined/null text to avoid 'undefined' appearing
+            if (typeof text === 'undefined' || text === null) text = '';
             const div = document.createElement('div');
             div.className = sender;
             if (sender === 'ai') {
@@ -338,7 +352,10 @@
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             if (sender === 'ai') {
-                try{ speak(div.textContent.replace(/<[^>]+>/g, '')); }catch(e){}
+                try{
+                    const spoken = (div.innerText || div.textContent || '').toString();
+                    speak(spoken.replace(/<[^>]+>/g, ''));
+                }catch(e){}
                 // Add event listener for order button
                 setTimeout(() => {
                             const btn = div.querySelector('#orderBtn');
@@ -393,29 +410,30 @@
 
         // Polite, interesting, and food-craving welcome greetings
         const welcomeGreetings = [
-            `Welcome to Manna Grab & Go! 🌿<br>Hello and thank you for choosing Manna Grab & Go — where healthy meets convenient!<br>We're delighted to serve you fresh sandwiches, nourishing drinks, and wholesome snacks made with carefully selected vegetables, herbs, and natural spices. Every item is prepared to help you enjoy great taste while supporting your wellness goals.<br><strong>Why customers keep coming back:</strong><br>🥪 Freshly made and ready to grab ⚡ Fast service for busy lifestyles 🌿 Packed with natural ingredients 💚 Supports healthy living and daily wellness 💰 Affordable goodness you can enjoy every day<br>Whether you're heading to work, school, a meeting, or simply need a quick healthy meal, we've got something delicious waiting for you.<br><em>Remember: Healthy eating doesn't have to be difficult. Just grab, go, and enjoy!</em><br>🌟 Manna Grab & Go "Grab Goodness. Go Further."`,
-            `👋 Welcome to Manna Grab & Go!<br>I'm your wellness assistant, here to help you discover fresh sandwiches, healthy drinks, and nourishing snacks that fit your lifestyle.<br>Looking for more energy? Better digestion? A quick healthy meal? We've got you covered.<br>🥪 Fresh 🌿 Nutritious ⚡ Convenient 💚 Made for your well-being<br>What would you like to enjoy today?`,
-            `MANNA GRAB & GO<br>"Food that works for you."<br>Our meals are designed not only to satisfy hunger but also to support a healthier lifestyle through carefully selected vegetables, herbs, and spices known for their wellness benefits.<br><strong>Eat Smart. Live Well.</strong>`
+            `Welcome to Manna Grab & Go! 🌿<br>Hello and thank you for choosing Manna Grab & Go — where healthy meets convenient!<br>We're delighted to serve you fresh sandwiches, nourishing drinks, and wholesome snacks made with carefully selected vegetables, herbs, and natural spices. Every item is prepared to help you enjoy great taste while supporting your wellness goals.<br><strong>Why customers keep coming back:</strong><br>🥪 Freshly made and ready to grab<br>⚡ Fast service for busy lifestyles<br>🌿 Packed with natural ingredients<br>💚 Supports healthy living and daily wellness<br>💰 Affordable goodness you can enjoy every day<br>Whether you're heading to work, school, a meeting, or simply need a quick healthy meal, we've got something delicious waiting for you.<br><em>Remember: Healthy eating doesn't have to be difficult. Just grab, go, and enjoy!</em><br>Thank you for being part of the Manna Grab & Go family. We look forward to serving you again soon.<br>🌟 Manna Grab & Go "Grab Goodness. Go Further."`,
+            `Welcome to Manna Grab & Go!<br>I'm your wellness assistant, here to help you discover fresh sandwiches, healthy drinks, and nourishing snacks that fit your lifestyle.<br>Looking for more energy? Better digestion? A quick healthy meal? We've got you covered.<br>Fresh, Nutritious, Convenient, Made for your well-being<br>What would you like to enjoy today?`,
+            `Welcome to Manna Grab & Go!<br>Fresh, nutritious, convenient, and made for your well-being.<br>What would you like to enjoy today?`
         ];
         // --- Interactive Food + Health flow ---
         const foodTypes = [
             'Manna Chicken Supreme',
             'Garden Vitality Sandwich',
             'Sunrise Egg Delight',
-            'Golden Crunch Sweet Potato fries',
+            'Golden Crunch french fries',
             'Manna Power Pocket (Bread + Akara)',
             'Heritage Breakfast Combo (Akara + Pap)',
-            'Champion\'s Breakfast pack (Akara + Oatmeal)'
+            'Champion\'s Breakfast pack (Akara + Oatmeal)',
+            'MANAZO Vitality Drinks'
         ];
         // Removed 'Food allergies' option per request
         const healthOptions = ['Ulcer', 'High blood pressure', 'Diabetes', 'Weight loss goals', 'None'];
 
         const recommendations = {
-            'Ulcer': `Thanks for sharing. For ulcer patients, it’s safer to take light, non-spicy, and low-oil meals.<br><strong>Recommended for you:</strong><ul><li>White rice + plantain + grilled chicken</li><li>Boiled yam + egg sauce (mild pepper)</li><li>Plain spaghetti + fish</li><li>Oats + milk</li></ul>Avoid: very peppery meals, fried foods, alcohol, raw garri.`,
-            'High blood pressure': `Got it. For high blood pressure, we avoid salty and oily meals.<br><strong>Recommended for you:</strong><ul><li>Jollof/white rice + grilled turkey</li><li>Boiled plantain + vegetables & fish</li><li>Beans + sweet potatoes</li><li>Moi moi + fish</li></ul>Avoid: red meat, fried foods, very salty foods.`,
-            'Diabetes': `Understood. For diabetes, low-sugar and low-starch meals are safer.<br><strong>Recommended for you:</strong><ul><li>Grilled fish + vegetables</li><li>Beans + boiled plantain (small portion)</li><li>Moi moi + egg</li><li>Brown rice (if available)</li></ul>Avoid: soft drinks, snacks, white bread, large rice portions.`,
-            'Weight loss goals': `Nice! Here are weight-friendly meals for you:<br><strong>Recommended:</strong><ul><li>Grilled chicken/fish + vegetables</li><li>Beans + plantain (small portion)</li><li>Oatmeal</li><li>Smoothies without sugar</li></ul>Avoid: fries, pastries, heavy swallow.`,
-            'None': `Perfect! Here are today’s top meals:<ul><li>Jollof Rice + Turkey</li><li>Spaghetti Stir-Fry + Chicken</li><li>Fried Rice + Beef</li><li>Beans + Plantain</li><li>Shawarma</li></ul>Which one would you like to order?`
+            'Ulcer': `At <strong>Manna Grab & Go</strong>, we believe good food should not only taste great, but also support your wellness and fit your lifestyle. Whether you are managing a health condition or simply looking for a lighter, more balanced meal, we have thoughtfully prepared options that can help you eat well and feel good.<br><br><strong>🌿 For Ulcer</strong><br>If you have an ulcer, it is usually best to choose meals that are soft, gentle on the stomach, and not too spicy, oily, or acidic. The good news is that we have comforting options that can still be satisfying and delicious.<br><br><strong>Recommended Meals</strong><ol><li><strong>Champion’s Breakfast Pack (Akara + Oatmeal)</strong><br>This is a warm, filling, and stomach-friendly choice. Oatmeal is known for being gentle and soothing, while akara gives you a good protein boost to keep you energized. Pair it with <strong>MANAZO Drink</strong> for a refreshing wellness beverage that completes your meal beautifully.</li><li><strong>Heritage Breakfast Combo (Akara + Pap)</strong><br>A classic, comforting meal that feels light yet nourishing. Pap is easy to digest and makes this combo a great option when you want something simple, satisfying, and kind to your stomach. Add <strong>MANAZO Drink</strong> for a naturally refreshing finish.</li><li><strong>Garden Vitality Sandwich</strong><br>Fresh vegetables make this a wholesome and nourishing choice. If your ulcer is active, you may prefer it with lighter mayonnaise or reduced spices. It is a great option when you want something fresh, balanced, and easy to enjoy. Pair it with <strong>MANAZO Drink</strong> for a pleasant and refreshing meal experience.</li></ol><strong>Helpful Advice:</strong><ul><li>Eat smaller meals more often instead of waiting too long between meals.</li><li>Try to avoid too much pepper, caffeine, and very oily foods.</li><li>Drink enough water throughout the day.</li><li>Choose meals that feel gentle and comfortable for your body.</li></ul>`,
+            'High blood pressure': `If you are managing high blood pressure, choosing meals with more vegetables, balanced protein, and less excess salt can be a smart and healthy step. Our menu includes tasty options that can help you enjoy your food while still making mindful choices.<br><br><strong>Recommended Meals</strong><ol><li><strong>Garden Vitality Sandwich</strong><br>Packed with fresh vegetables and plant-based goodness, this is one of the lightest and most refreshing choices on the menu. It is a great everyday option for anyone looking to eat well and stay balanced. Pair it with <strong>MANAZO Drink</strong> for a refreshing wellness boost.</li><li><strong>Champion’s Breakfast Pack (Akara + Oatmeal)</strong><br>This combo offers a satisfying mix of protein and fiber. Oatmeal is a heart-friendly choice, and akara adds energy to help you stay active and focused throughout the day. Enjoy it with <strong>MANAZO Drink</strong> for a nourishing and refreshing meal.</li><li><strong>Manna Chicken Supreme</strong><br>A delicious combination of chicken and vegetables that gives you a more balanced meal option. It is filling, flavorful, and a great choice when you want something wholesome and satisfying. Pair it with <strong>MANAZO Drink</strong> for added refreshment.</li></ol><strong>Helpful Advice:</strong><ul><li>Reduce extra salt, ketchup, and heavy sauces where possible.</li><li>Stay hydrated and keep active when you can.</li><li>Limit frequent intake of fries and heavily fried foods.</li><li>Choose meals that support your health without sacrificing taste.</li></ul>`,
+            'Diabetes': `If you are living with diabetes, balanced meals with fiber, protein, and moderate carbohydrates can help support better blood sugar control. The right meal choices can still be tasty, filling, and enjoyable.<br><br><strong>Recommended Meals</strong><ol><li><strong>Garden Vitality Sandwich</strong><br>This is a lighter option with plenty of vegetables and less heavy carbohydrate content than fries-based meals. It is a smart and refreshing choice for anyone looking for a more balanced meal. Pair it with <strong>MANAZO Drink</strong> as a refreshing beverage option.</li><li><strong>Manna Chicken Supreme</strong><br>Chicken provides protein, while the vegetables add fiber and freshness. This combination can help make your meal more balanced and satisfying. Pair it with <strong>MANAZO Drink</strong> for a wholesome and enjoyable meal experience.</li><li><strong>Champion’s Breakfast Pack (Akara + Oatmeal)</strong><br>Oatmeal is a great source of fiber and may help support slower sugar absorption when eaten in moderation. Combined with akara, it becomes a filling and nourishing breakfast choice. Enjoy it with <strong>MANAZO Drink</strong> for a naturally inspired drink.</li></ol><strong>Helpful Advice:</strong><ul><li>Avoid sugary drinks and very large portions.</li><li>Combine carbohydrates with protein and fiber for better balance.</li><li>Try to eat at regular times each day.</li><li>Choose meals that help you feel full, energized, and in control.</li></ul>`,
+            'Weight loss goals': `If your goal is healthy weight management, meals that are rich in vegetables, protein, and fiber can help you feel satisfied for longer and reduce unnecessary snacking. At Manna Grab & Go, we have options that are both enjoyable and mindful.<br><br><strong>Recommended Meals</strong><ol><li><strong>Garden Vitality Sandwich</strong><br>A light, fresh, and vegetable-rich option that is perfect when you want something tasty without feeling too heavy. It is a smart choice for a balanced lifestyle. Pair it with <strong>MANAZO Drink</strong> for a refreshing and satisfying combination.</li><li><strong>Manna Chicken Supreme</strong><br>This meal gives you protein to help keep you fuller for longer, while the vegetables add freshness and balance. It is a great option when you want a meal that feels complete and nourishing. Pair it with <strong>MANAZO Drink</strong> for a wholesome finish.</li><li><strong>Sunrise Egg Delight</strong><br>Eggs are a satisfying source of protein and can help keep hunger under control. This is a simple, tasty, and filling option for anyone trying to eat more mindfully. Pair it with <strong>MANAZO Drink</strong> for added refreshment.</li></ol><strong>Helpful Advice:</strong><ul><li>Limit fries and oversized portions when possible.</li><li>Drink water regularly and stay active.</li><li>Choose balanced meals instead of skipping meals.</li><li>Enjoy food that supports your goals and still tastes great.</li></ul>`,
+            'None': `If you do not have a specific health condition, you can still enjoy meals that are balanced, delicious, and energizing. Our menu is designed to give you options that fit everyday life, whether you are at work, school, home, or on the move.<br><br><strong>Recommended Meals</strong><ol><li><strong>Manna Chicken Supreme</strong><br>A satisfying and well-rounded meal that combines protein and vegetables in one delicious sandwich. Pair it with <strong>MANAZO Drink</strong> for a refreshing wellness combination that is perfect any day of the week.</li><li><strong>Champion’s Breakfast Pack</strong><br>A nourishing and energizing choice that helps you start your day feeling full and focused. Pair it with <strong>MANAZO Drink</strong> for a complete and refreshing breakfast experience.</li><li><strong>Sunrise Egg Delight</strong><br>A simple, tasty, and wholesome option that works well for breakfast or a light meal anytime. Pair it with <strong>MANAZO Drink</strong> for a satisfying and refreshing choice.</li></ol><strong>MANAZO Drink</strong> is a refreshing, naturally inspired wellness beverage made with ginger, turmeric, moringa, hibiscus, cinnamon, lemongrass, cloves, and jaggery. It is a lovely way to complete your meal and enjoy something both refreshing and nourishing.`
         };
 
         let selectedFoodType = null;
@@ -543,8 +561,8 @@
             }
             actionBar.innerHTML = `
                 <button id="preOrderBtn" style="flex:1;margin-right:6px;">Pre Order</button>
-                <button id="reserveBtn" style="flex:1;margin-right:6px;">Table Reservation</button>
                 <button id="menuBtn" style="flex:1;margin-right:6px;">Menu</button>
+                <button id="drinksBtn" style="flex:1;margin-right:6px;">MANAZO Drinks</button>
                 <button id="makePaymentBtn" style="flex:1;">Make Payment</button>
             `;
         }
@@ -558,7 +576,6 @@
 
         function setActionBarListeners() {
             const pre = document.getElementById('preOrderBtn'); if(pre) pre.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
-            const res = document.getElementById('reserveBtn'); if(res) res.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
             const menu = document.getElementById('menuBtn'); if(menu) menu.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
             const drinks = document.getElementById('drinksBtn'); if(drinks) drinks.onclick = function() { showManazoInfo(); };
             const pay = document.getElementById('makePaymentBtn'); if(pay) pay.onclick = function() { showAccountDetails(paymentReminderText()); };
@@ -571,17 +588,26 @@
             setActionBarListeners();
         }
 
-        // Add WhatsApp chat button
+        // Add WhatsApp chat button (more visible + subtle animation)
         (function addWhatsAppButton(){
             const wa = document.createElement('button');
             wa.id = 'waBtn';
+            wa.setAttribute('aria-label', 'Chat with us on WhatsApp');
             wa.title = 'Chat with us on WhatsApp';
-            wa.innerHTML = '💬 WhatsApp';
+            wa.innerHTML = '<span style="font-size:1.2em;line-height:1">💬</span><span style="font-weight:700;margin-left:8px;">WhatsApp</span>';
             Object.assign(wa.style, {
-                position: 'fixed', right: '12px', bottom: '80px', zIndex: 10001,
-                background: '#25D366', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer', fontWeight: '600'
+                position: 'fixed', right: '18px', bottom: '18px', zIndex: 100000,
+                background: '#25D366', color: '#fff', border: '2px solid rgba(0,0,0,0.08)', padding: '14px 16px', borderRadius: '32px', boxShadow: '0 6px 18px rgba(0,0,0,0.22)', cursor: 'pointer', fontWeight: '700', fontSize: '1.05rem', display: 'flex', alignItems: 'center'
             });
             wa.onclick = function(){ window.open('https://api.whatsapp.com/send?phone=2348083505863&text=Hello%20Manna%20Grab%20%26%20Go', '_blank'); };
+            // Subtle pulse animation using WAAPI for broad compatibility
+            try{
+                wa.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.075)' },
+                    { transform: 'scale(1)' }
+                ], { duration: 1800, iterations: Infinity });
+            }catch(e){}
             document.body.appendChild(wa);
         })();
     </script>
