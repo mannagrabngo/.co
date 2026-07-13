@@ -361,7 +361,7 @@
                             const btn = div.querySelector('#orderBtn');
                             if (btn) {
                                 btn.onclick = function() {
-                                    window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank');
+                                    window.open('https://wa.me/c/2348083505863', '_blank');
                                 };
                             }
                 }, 100);
@@ -419,7 +419,7 @@
             'Manna Chicken Supreme',
             'Garden Vitality Sandwich',
             'Sunrise Egg Delight',
-            'Golden Crunch french fries',
+            'Golden Crunch Sweet Potato fries',
             'Manna Power Pocket (Bread + Akara)',
             'Heritage Breakfast Combo (Akara + Pap)',
             'Champion\'s Breakfast pack (Akara + Oatmeal)',
@@ -495,7 +495,7 @@
                 if (action === 'order-now') {
                     appendMessage('user', 'Order Now');
                     // Open the ordering link for the user to place the order externally
-                    window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank');
+                    window.open('https://wa.me/c/2348083505863', '_blank');
                     // Log the intent and show payment instructions (user completes payment separately)
                     logOrderToBlockchain('Order placed via Order Now button');
                     showAccountDetails('Thanks! Your order link has been opened. ' + paymentReminderText());
@@ -575,8 +575,8 @@
         }
 
         function setActionBarListeners() {
-            const pre = document.getElementById('preOrderBtn'); if(pre) pre.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
-            const menu = document.getElementById('menuBtn'); if(menu) menu.onclick = function() { window.open('https://www.restaurantlogin.com/api/fb/z5q_rm', '_blank'); };
+            const pre = document.getElementById('preOrderBtn'); if(pre) pre.onclick = function() { window.open('https://wa.me/c/2348083505863', '_blank'); };
+            const menu = document.getElementById('menuBtn'); if(menu) menu.onclick = function() { window.open('https://wa.me/c/2348083505863', '_blank'); };
             const drinks = document.getElementById('drinksBtn'); if(drinks) drinks.onclick = function() { showManazoInfo(); };
             const pay = document.getElementById('makePaymentBtn'); if(pay) pay.onclick = function() { showAccountDetails(paymentReminderText()); };
         }
